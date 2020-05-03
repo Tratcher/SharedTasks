@@ -62,8 +62,8 @@ ForEach ($item in $result)
     $on
     if ($todaysDate.DayOfWeek -eq $on)
     {
-     "Reopen"
-     $reopen = true
+      "Reopen"
+      $reopen = true
     }
  }
  elseif ([System.String]::Equals($type, "Monthly", [System.StringComparison]::OrdinalIgnoreCase))
