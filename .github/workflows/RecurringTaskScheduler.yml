@@ -21,4 +21,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        .github\workflows\RecurringTaskScheduler.ps1
+        $Headers = @{ Authorization = 'token {0}' -f $ENV:GITHUB_TOKEN; };
+        $result = Invoke-RestMethod -Headers $Headers -Uri https://api.github.com/repos/Tratcher/SharedTasks/issues?state=closed&labels=Recurring
+        $result
