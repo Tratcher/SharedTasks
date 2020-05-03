@@ -18,7 +18,8 @@ ForEach ($item in $result)
   $unit = "";
   $since = "";
   $on = "";
-  $reader = New-Object -TypeName System.IO.StringReader -ArgumentList $item.body
+  $body = $item.body
+  $reader = New-Object -TypeName System.IO.StringReader -ArgumentList $body
   while ($True)
   {
     $line = $reader.ReadLine();
