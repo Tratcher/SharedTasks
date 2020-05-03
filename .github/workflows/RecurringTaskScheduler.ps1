@@ -83,9 +83,10 @@ ForEach ($item in $result)
    $message
  }
  $reopen
- if ($reopen)
+ if ($reopen -eq true)
  {
   $json = "{ `"state`": `"open`" }"
   $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri $item.url -Body $json
+  $result
  }
 }
