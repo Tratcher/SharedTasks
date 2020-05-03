@@ -4,6 +4,8 @@ $result = Invoke-RestMethod -Headers $Headers -Uri "https://api.github.com/repos
 ForEach ($item in $result)
 {
  $item.title
+ $closedDate = [System.DateTimeOffset]::Parse($item.closed_at).Date
+ $closedDate
  $lines = $item.body.Split("`r`n", [System.StringSplitOptions]::RemoveEmptyEntries);
  $lines
  $type = "";
