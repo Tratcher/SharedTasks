@@ -8,198 +8,197 @@ $result = Invoke-RestMethod -Headers $Headers -Uri "https://api.github.com/repos
 # Parse each issue
 ForEach ($item in $result)
 {
- "Title: " + $item.title
- $createdDate = [System.DateTimeOffset]::Parse($item.created_at).Date
- "Created Date: " + $createdDate
- $closedDate = [System.DateTimeOffset]::Parse($item.closed_at).Date
- "Closed Date: " + $closedDate
- 
- $every = "";
- $unit = "";
- $since = "";
- $on = "";
- $reader = New-Object -TypeName System.IO.StringReader -ArgumentList $item.body
- while ($True)
- {
-  $line = $reader.ReadLine();
+  "Title: " + $item.title
+  $createdDate = [System.DateTimeOffset]::Parse($item.created_at).Date
+  "Created Date: " + $createdDate
+  $closedDate = [System.DateTimeOffset]::Parse($item.closed_at).Date
+  "Closed Date: " + $closedDate
 
-  if ($line -eq $null)
+  $every = "";
+  $unit = "";
+  $since = "";
+  $on = "";
+  $reader = New-Object -TypeName System.IO.StringReader -ArgumentList $item.body
+  while ($True)
   {
-      break;
-  }
-
-  if (!$line.Equals("#### Recurrence Schedule"))
-  {
-    continue;
-  }
-
-  # Every
-  $line = $reader.ReadLine();
-  if ($line -eq $null)
-  {
-      break;
-  }
-
-  $everyLineWords = $line.Split(' ');
-  if ($everyLineWords.Count -gt 1 -and [System.String]::Equals($everyLineWords[0], "Every:", [System.StringComparison]::OrdinalIgnoreCase))
-  {
-      $every = $everyLineWords[1];
-  }
-
-  # Unit
-  $line = $reader.ReadLine();
-  if ($line -eq $null)
-  {
-      break;
-  }
-
-  $unitLineWords = $line.Split(' ');
-  if ($unitLineWords.Count -gt 1 -and [System.String]::Equals($unitLineWords[0], "Unit:", [System.StringComparison]::OrdinalIgnoreCase))
-  {
-      $unit = $unitLineWords[1];
-  }
-
-  # Since
-  $line = $reader.ReadLine();
-  if ($line -eq $null)
-  {
-      break;
-  }
-
-  $sinceLineWords = $line.Split(' ');
-  if ($sinceLineWords.Count -gt 1 -and [System.String]::Equals($sinceLineWords[0], "Since:", [System.StringComparison]::OrdinalIgnoreCase))
-  {
-      $since = $sinceLineWords[1];
-  }
-
-  # On
-  $line = $reader.ReadLine();
-  if ($line -eq $null)
-  {
-      break;
-  }
-
-  $onLineWords = $line.Split(' ');
-  if ($onLineWords.Count -gt 1 -and [System.String]::Equals($onLineWords[0], "On:", [System.StringComparison]::OrdinalIgnoreCase))
-  {
-      $on = $onLineWords[1];
-  }
-
-  break;
- }
- 
- "Unit: " + $unit
- $reopen = $false
- if ([System.String]::Equals($unit, "Days", [System.StringComparison]::OrdinalIgnoreCase))
- {
-    "Since: " + $since
-    if ([System.String]::Equals($since, "Completed", [System.StringComparison]::OrdinalIgnoreCase))
+    $line = $reader.ReadLine();
+    if ($line -eq $null)
     {
-      $days = ($todaysDate - $closedDate).TotalDays
-      "Total Days: " + $days
-      "Every: " + $every
-      if ($every -le $days)
-      {
-        $reopen = $True
-      }
+        break;
     }
-    elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
+
+    if (!$line.Equals("#### Recurrence Schedule"))
     {
-      $days = ($todaysDate - $createdDate).TotalDays
-      "Total Days: " + $days
-      "Every: " + $every
-      if (($days % $every) -eq 0)
-      {
-        $reopen = $True
-      }
+      continue;
     }
-    else
+
+    # Every
+    $line = $reader.ReadLine();
+    if ($line -eq $null)
     {
-      "Unrecognized Since: " + $since
+        break;
     }
- }
- elseif ([System.String]::Equals($unit, "Weeks", [System.StringComparison]::OrdinalIgnoreCase))
- {
-    "Since: " + $since
-    if ([System.String]::Equals($since, "Completed", [System.StringComparison]::OrdinalIgnoreCase))
+
+    $everyLineWords = $line.Split(' ');
+    if ($everyLineWords.Count -gt 1 -and [System.String]::Equals($everyLineWords[0], "Every:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-      [int] $weeks = [System.Math]::Floor(($todaysDate - $closedDate).TotalDays / 7)
-      "Total Weeks: " + $weeks
-      "Every: " + $every
-      if ($every -le $weeks)
-      {
-        "On: " + $on
-        if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.DayOfWeek -eq $on)
-        {
-          $reopen = $True
-        }
-      }
+        $every = $everyLineWords[1];
     }
-    elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
+
+    # Unit
+    $line = $reader.ReadLine();
+    if ($line -eq $null)
     {
-      [int] $weeks = [System.Math]::Floor(($todaysDate - $createdDate).TotalDays / 7)
-      "Total Weeks: " + $weeks
-      "Every: " + $every
-      if (($weeks % $every) -eq 0)
-      {
-        "On: " + $on
-        if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.DayOfWeek -eq $on)
-        {
-          $reopen = $True
-        }
-      }
+        break;
     }
-    else
+
+    $unitLineWords = $line.Split(' ');
+    if ($unitLineWords.Count -gt 1 -and [System.String]::Equals($unitLineWords[0], "Unit:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-      "Unrecognized Since: " + $since
+        $unit = $unitLineWords[1];
     }
- }
- elseif ([System.String]::Equals($unit, "Months", [System.StringComparison]::OrdinalIgnoreCase))
- {    
-    "Since: " + $since
-    if ([System.String]::Equals($since, "Completed", [System.StringComparison]::OrdinalIgnoreCase))
+
+    # Since
+    $line = $reader.ReadLine();
+    if ($line -eq $null)
     {
-      "Every:" + $every
-      if ($closedDate.AddMonths($every) -le $todaysDate)
-      {
-        "On: " + $on
-        if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.Day -eq $on)
-        {
-          $reopen = $True
-        }
-      }
+        break;
     }
-    elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
+
+    $sinceLineWords = $line.Split(' ');
+    if ($sinceLineWords.Count -gt 1 -and [System.String]::Equals($sinceLineWords[0], "Since:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-      $months = (($todaysDate.Year - $createdDate.Year) * 12) + ($todaysDate.Month - $createdDate.Month)
-      "Total Months: " + $months
-      "Every: " + $every
-      if (($months % $every) -eq 0)
-      {
-        "On: " + $on
-        if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.Day -eq $on)
-        {
-          $reopen = $True
-        }
-      }
+        $since = $sinceLineWords[1];
     }
-    else
+
+    # On
+    $line = $reader.ReadLine();
+    if ($line -eq $null)
     {
-      "Unrecognized Since: " + $since
+        break;
     }
- }
- else
- {
-   "Unrecognized unit: " + $unit
- }
- 
- "Reopen: " + $reopen
- if ($reopen)
- {
-  $json = "{ `"state`": `"open`" }"
-  $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri $item.url -Body $json
-  $result
- }
+
+    $onLineWords = $line.Split(' ');
+    if ($onLineWords.Count -gt 1 -and [System.String]::Equals($onLineWords[0], "On:", [System.StringComparison]::OrdinalIgnoreCase))
+    {
+        $on = $onLineWords[1];
+    }
+
+    break;
+  }
+
+  "Unit: " + $unit
+  $reopen = $false
+  if ([System.String]::Equals($unit, "Days", [System.StringComparison]::OrdinalIgnoreCase))
+  {
+     "Since: " + $since
+     if ([System.String]::Equals($since, "Completed", [System.StringComparison]::OrdinalIgnoreCase))
+     {
+       $days = ($todaysDate - $closedDate).TotalDays
+       "Total Days: " + $days
+       "Every: " + $every
+       if ($every -le $days)
+       {
+         $reopen = $True
+       }
+     }
+     elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
+     {
+       $days = ($todaysDate - $createdDate).TotalDays
+       "Total Days: " + $days
+       "Every: " + $every
+       if (($days % $every) -eq 0)
+       {
+         $reopen = $True
+       }
+     }
+     else
+     {
+       "Unrecognized Since: " + $since
+     }
+  }
+  elseif ([System.String]::Equals($unit, "Weeks", [System.StringComparison]::OrdinalIgnoreCase))
+  {
+     "Since: " + $since
+     if ([System.String]::Equals($since, "Completed", [System.StringComparison]::OrdinalIgnoreCase))
+     {
+       [int] $weeks = [System.Math]::Floor(($todaysDate - $closedDate).TotalDays / 7)
+       "Total Weeks: " + $weeks
+       "Every: " + $every
+       if ($every -le $weeks)
+       {
+         "On: " + $on
+         if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.DayOfWeek -eq $on)
+         {
+           $reopen = $True
+         }
+       }
+     }
+     elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
+     {
+       [int] $weeks = [System.Math]::Floor(($todaysDate - $createdDate).TotalDays / 7)
+       "Total Weeks: " + $weeks
+       "Every: " + $every
+       if (($weeks % $every) -eq 0)
+       {
+         "On: " + $on
+         if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.DayOfWeek -eq $on)
+         {
+           $reopen = $True
+         }
+       }
+     }
+     else
+     {
+       "Unrecognized Since: " + $since
+     }
+  }
+  elseif ([System.String]::Equals($unit, "Months", [System.StringComparison]::OrdinalIgnoreCase))
+  {    
+     "Since: " + $since
+     if ([System.String]::Equals($since, "Completed", [System.StringComparison]::OrdinalIgnoreCase))
+     {
+       "Every:" + $every
+       if ($closedDate.AddMonths($every) -le $todaysDate)
+       {
+         "On: " + $on
+         if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.Day -eq $on)
+         {
+           $reopen = $True
+         }
+       }
+     }
+     elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
+     {
+       $months = (($todaysDate.Year - $createdDate.Year) * 12) + ($todaysDate.Month - $createdDate.Month)
+       "Total Months: " + $months
+       "Every: " + $every
+       if (($months % $every) -eq 0)
+       {
+         "On: " + $on
+         if ([System.String]::IsNullOrEmpty($on) -or $todaysDate.Day -eq $on)
+         {
+           $reopen = $True
+         }
+       }
+     }
+     else
+     {
+       "Unrecognized Since: " + $since
+     }
+  }
+  else
+  {
+    "Unrecognized unit: " + $unit
+  }
+
+  "Reopen: " + $reopen
+  if ($reopen)
+  {
+    $json = "{ `"state`": `"open`" }"
+    $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri $item.url -Body $json
+    $result
+  }
 }
 
 $LASTEXITCODE = 0
