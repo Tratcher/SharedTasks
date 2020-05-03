@@ -48,10 +48,12 @@ ForEach ($item in $result)
    }
  }
 
+ $reopen = false
  if ([System.String]::Equals($type, "Daily", [System.StringComparison]::OrdinalIgnoreCase))
  {
     $type
     "Reopen"
+    $reopen = true
  }
  elseif ([System.String]::Equals($type, "Weekly", [System.StringComparison]::OrdinalIgnoreCase))
  {
@@ -61,6 +63,7 @@ ForEach ($item in $result)
     if ($todaysDate.DayOfWeek -eq $on)
     {
      "Reopen"
+     $reopen = true
     }
  }
  elseif ([System.String]::Equals($type, "Monthly", [System.StringComparison]::OrdinalIgnoreCase))
@@ -70,7 +73,8 @@ ForEach ($item in $result)
     $on
     if ($todaysDate.Day -eq $on)
     {
-     "Reopen"
+      "Reopen"
+      $reopen = true
     }
  }
  else
@@ -79,3 +83,4 @@ ForEach ($item in $result)
    $message
  }
 }
+$reopen
