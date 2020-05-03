@@ -1,6 +1,8 @@
 # Query for closed recurring issues
 $Headers = @{ Authorization = 'token {0}' -f $ENV:GITHUB_TOKEN; };
 $result = Invoke-RestMethod -Headers $Headers -Uri "https://api.github.com/repos/Tratcher/SharedTasks/issues?state=closed&labels=Recurring"
+$todaysDate = [System.DateTime]::Now.Date
+$todaysDate
 ForEach ($item in $result)
 {
  $item.title
@@ -49,18 +51,27 @@ ForEach ($item in $result)
  if ([System.String]::Equals($type, "Daily", [System.StringComparison]::OrdinalIgnoreCase))
  {
     $type
+    "Reopen"
  }
  elseif ([System.String]::Equals($type, "Weekly", [System.StringComparison]::OrdinalIgnoreCase))
  {
     $type
     $every
     $on
+    if ($todaysDate.DayOfWeek -eq $on)
+    {
+     "Reopen"
+    }
  }
  elseif ([System.String]::Equals($type, "Monthly", [System.StringComparison]::OrdinalIgnoreCase))
  {
     $type
     $every
     $on
+    if ($todaysDate.Day -eq $on)
+    {
+     "Reopen"
+    }
  }
  else
  {
