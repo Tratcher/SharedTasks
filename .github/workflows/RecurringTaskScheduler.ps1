@@ -53,7 +53,7 @@ ForEach ($item in $result)
  {
     $type
     "Reopen"
-    $reopen = true
+    $reopen = $True
  }
  elseif ([System.String]::Equals($type, "Weekly", [System.StringComparison]::OrdinalIgnoreCase))
  {
@@ -63,7 +63,7 @@ ForEach ($item in $result)
     if ($todaysDate.DayOfWeek -eq $on)
     {
       "Reopen"
-      $reopen = true
+      $reopen = $True
     }
  }
  elseif ([System.String]::Equals($type, "Monthly", [System.StringComparison]::OrdinalIgnoreCase))
@@ -74,7 +74,7 @@ ForEach ($item in $result)
     if ($todaysDate.Day -eq $on)
     {
       "Reopen"
-      $reopen = true
+      $reopen = $True
     }
  }
  else
@@ -83,7 +83,7 @@ ForEach ($item in $result)
    $message
  }
  $reopen
- if ($reopen -eq true)
+ if ($reopen)
  {
   $json = "{ `"state`": `"open`" }"
   $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri $item.url -Body $json
