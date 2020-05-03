@@ -90,3 +90,4 @@ ForEach ($item in $result)
   $result
  }
 }
+return 0;
