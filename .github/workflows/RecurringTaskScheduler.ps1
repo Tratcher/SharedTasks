@@ -82,5 +82,10 @@ ForEach ($item in $result)
    $message = "Unrecognized type: " + $type
    $message
  }
+ $reopen
+ if ($reopen)
+ {
+  $json = "{ `"state`": `"open`" }"
+  $result = Invoke-RestMethod -Method PATCH -Headers $Headers -Uri $item.url -Body $json
+ }
 }
-$reopen
