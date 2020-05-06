@@ -1,4 +1,7 @@
-$todaysDate = [System.DateTimeOffset]::UtcNow.Date
+"Local Time Zone: " + [System.TimeZoneInfo]::Local
+$todaysDateUtc = [System.DateTimeOffset]::UtcNow
+"Today's Date UTC: " + $todaysDate
+$todaysDate = $todaysDateUtc.ToLocalTime().Date
 "Today's Date: " + $todaysDate
 
 # Query for closed recurring issues
@@ -9,9 +12,12 @@ $result = Invoke-RestMethod -Headers $Headers -Uri "https://api.github.com/repos
 ForEach ($item in $result)
 {
   "Title: " + $item.title
-  $createdDate = [System.DateTimeOffset]::Parse($item.created_at).Date
+  $createdDateUtc = [System.DateTimeOffset]::Parse($item.created_at)
+  "Created Date UTC: " + $createdDateUtc
+  $createdDate = $createdDateUtc.ToLocalTime().Date
   "Created Date: " + $createdDate
-  $closedDate = [System.DateTimeOffset]::Parse($item.closed_at).Date
+  $closedDateUtc = [System.DateTimeOffset]::Parse($item.closed_at)
+  "Closed Date Utc: " + $closedDateUtc
   "Closed Date: " + $closedDate
 
   $every = "";
