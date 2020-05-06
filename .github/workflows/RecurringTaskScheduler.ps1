@@ -1,7 +1,8 @@
-"Local Time Zone: " + [System.TimeZoneInfo]::Local
+$timeZone = [System.TimeZoneInfo]::FindSystemTimeZoneById("Pacific Standard Time")
+"Local Time Zone: " + $timeZone
 $todaysDateUtc = [System.DateTimeOffset]::UtcNow
-"Today's Date UTC: " + $todaysDate
-$todaysDate = $todaysDateUtc.ToLocalTime().Date
+"Today's Date UTC: " + $todaysDateUtc
+$todaysDate = [System.TimeZoneInfo]::ConvertTime($todaysDateUtc, $timeZone).Date
 "Today's Date: " + $todaysDate
 
 # Query for closed recurring issues
@@ -14,10 +15,11 @@ ForEach ($item in $result)
   "Title: " + $item.title
   $createdDateUtc = [System.DateTimeOffset]::Parse($item.created_at)
   "Created Date UTC: " + $createdDateUtc
-  $createdDate = $createdDateUtc.ToLocalTime().Date
+  $createdDate = [System.TimeZoneInfo]::ConvertTime($createdDateUtc, $timeZone).Date
   "Created Date: " + $createdDate
   $closedDateUtc = [System.DateTimeOffset]::Parse($item.closed_at)
   "Closed Date Utc: " + $closedDateUtc
+  $closedDate = [System.TimeZoneInfo]::ConvertTime($closedDateUtc, $timeZone)
   "Closed Date: " + $closedDate
 
   $every = "";
