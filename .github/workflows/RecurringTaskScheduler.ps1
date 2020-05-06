@@ -19,7 +19,7 @@ ForEach ($item in $result)
   "Created Date: " + $createdDate
   $closedDateUtc = [System.DateTimeOffset]::Parse($item.closed_at)
   "Closed Date Utc: " + $closedDateUtc
-  $closedDate = [System.TimeZoneInfo]::ConvertTime($closedDateUtc, $timeZone)
+  $closedDate = [System.TimeZoneInfo]::ConvertTime($closedDateUtc, $timeZone).Date
   "Closed Date: " + $closedDate
 
   $every = "";
