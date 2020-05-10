@@ -17,7 +17,7 @@ ForEach ($item in $result)
   "Created Date UTC: " + $createdDateUtc
   $createdDate = [System.TimeZoneInfo]::ConvertTime($createdDateUtc, $timeZone).Date
   "Created Date: " + $createdDate
-  $startDate = createdDate
+  $startDate = $createdDate
   $closedDateUtc = [System.DateTimeOffset]::Parse($item.closed_at)
   "Closed Date Utc: " + $closedDateUtc
   $closedDate = [System.TimeZoneInfo]::ConvertTime($closedDateUtc, $timeZone).Date
