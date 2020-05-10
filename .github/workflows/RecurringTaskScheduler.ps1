@@ -80,6 +80,7 @@ ForEach ($item in $result)
     {
         $start = $lineWords[1];
         $startDate = [System.DateTime]::Parse($start)
+        "Start Date: " + $startDate
     }
   }
 
