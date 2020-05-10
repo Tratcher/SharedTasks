@@ -71,7 +71,7 @@ ForEach ($item in $result)
         $since = $lineWords[1];
     }
     # On
-    else if ([System.String]::Equals($lineWords[0], "On:", [System.StringComparison]::OrdinalIgnoreCase))
+    elseif ([System.String]::Equals($lineWords[0], "On:", [System.StringComparison]::OrdinalIgnoreCase))
     {
         $on = $lineWords[1];
     }
