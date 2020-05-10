@@ -17,6 +17,7 @@ ForEach ($item in $result)
   "Created Date UTC: " + $createdDateUtc
   $createdDate = [System.TimeZoneInfo]::ConvertTime($createdDateUtc, $timeZone).Date
   "Created Date: " + $createdDate
+  $startDate = createdDate
   $closedDateUtc = [System.DateTimeOffset]::Parse($item.closed_at)
   "Closed Date Utc: " + $closedDateUtc
   $closedDate = [System.TimeZoneInfo]::ConvertTime($closedDateUtc, $timeZone).Date
@@ -28,6 +29,7 @@ ForEach ($item in $result)
   $on = "";
   $body = $item.body
   $reader = New-Object -TypeName System.IO.StringReader -ArgumentList $body
+  $foundMetdata = $false
   while ($True)
   {
     $line = $reader.ReadLine();
@@ -35,65 +37,50 @@ ForEach ($item in $result)
     {
         break;
     }
-
-    if (!$line.Equals("#### Recurrence Schedule"))
+    
+    if ($line.Equals("#### Recurrence Schedule"))
     {
-      continue;
+        $foundMetdata = $true
+        continue;
     }
 
+    if (!$foundMetdata)
+    {
+        continue;
+    }
+    
+    $lineWords = $line.Split(' ');
+
+    if ($lineWords.Count -le 1)
+    {
+        # Not a "key: value" pair, skip
+    }
     # Every
-    $line = $reader.ReadLine();
-    if ($line -eq $null)
+    if ([System.String]::Equals($lineWords[0], "Every:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-        break;
+        $every = $lineWords[1];
     }
-
-    $everyLineWords = $line.Split(' ');
-    if ($everyLineWords.Count -gt 1 -and [System.String]::Equals($everyLineWords[0], "Every:", [System.StringComparison]::OrdinalIgnoreCase))
-    {
-        $every = $everyLineWords[1];
-    }
-
     # Unit
-    $line = $reader.ReadLine();
-    if ($line -eq $null)
+    elseif ([System.String]::Equals($lineWords[0], "Unit:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-        break;
+        $unit = $lineWords[1];
     }
-
-    $unitLineWords = $line.Split(' ');
-    if ($unitLineWords.Count -gt 1 -and [System.String]::Equals($unitLineWords[0], "Unit:", [System.StringComparison]::OrdinalIgnoreCase))
-    {
-        $unit = $unitLineWords[1];
-    }
-
     # Since
-    $line = $reader.ReadLine();
-    if ($line -eq $null)
+    elseif ([System.String]::Equals($lineWords[0], "Since:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-        break;
+        $since = $lineWords[1];
     }
-
-    $sinceLineWords = $line.Split(' ');
-    if ($sinceLineWords.Count -gt 1 -and [System.String]::Equals($sinceLineWords[0], "Since:", [System.StringComparison]::OrdinalIgnoreCase))
-    {
-        $since = $sinceLineWords[1];
-    }
-
     # On
-    $line = $reader.ReadLine();
-    if ($line -eq $null)
+    else if ([System.String]::Equals($lineWords[0], "On:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-        break;
+        $on = $lineWords[1];
     }
-
-    $onLineWords = $line.Split(' ');
-    if ($onLineWords.Count -gt 1 -and [System.String]::Equals($onLineWords[0], "On:", [System.StringComparison]::OrdinalIgnoreCase))
+    # Start
+    elseif ([System.String]::Equals($lineWords[0], "Start:", [System.StringComparison]::OrdinalIgnoreCase))
     {
-        $on = $onLineWords[1];
+        $start = $lineWords[1];
+        $startDate = [System.DateTime]::Parse($start)
     }
-
-    break;
   }
 
   "Unit: " + $unit
@@ -113,7 +100,7 @@ ForEach ($item in $result)
      }
      elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
      {
-       $days = ($todaysDate - $createdDate).TotalDays
+       $days = ($todaysDate - $startDate).TotalDays
        "Total Days: " + $days
        "Every: " + $every
        if (($days % $every) -eq 0)
@@ -145,7 +132,7 @@ ForEach ($item in $result)
      }
      elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
      {
-       [int] $weeks = [System.Math]::Floor(($todaysDate - $createdDate).TotalDays / 7)
+       [int] $weeks = [System.Math]::Floor(($todaysDate - $startDate).TotalDays / 7)
        "Total Weeks: " + $weeks
        "Every: " + $every
        if (($weeks % $every) -eq 0)
@@ -179,7 +166,7 @@ ForEach ($item in $result)
      }
      elseif ([System.String]::Equals($since, "Scheduled", [System.StringComparison]::OrdinalIgnoreCase))
      {
-       $months = (($todaysDate.Year - $createdDate.Year) * 12) + ($todaysDate.Month - $createdDate.Month)
+       $months = (($todaysDate.Year - $startDate.Year) * 12) + ($todaysDate.Month - $startDate.Month)
        "Total Months: " + $months
        "Every: " + $every
        if (($months % $every) -eq 0)
