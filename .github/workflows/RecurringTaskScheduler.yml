@@ -2,11 +2,12 @@ name: Recurring Task Scheduler
 on:
   # Test this script using on: push
   push:
-  schedule:
+  # Schedule currently disabled
+  # schedule: 
     # * is a special character in YAML so you have to quote this string
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/events-that-trigger-workflows#scheduled-events-schedule
     # Once per day at 5am PST (13 UTC)
-    - cron: '0 13 * * *'
+    # - cron: '0 13 * * *'
     
 jobs:
   schedule_tasks:
